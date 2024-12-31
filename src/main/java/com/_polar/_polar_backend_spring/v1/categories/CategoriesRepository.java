@@ -16,7 +16,7 @@ public class CategoriesRepository {
         final int TAKE_COUNT = 8;
 
         return em.createQuery("select c from Categories c", Categories.class)
-//                .setMaxResults(TAKE_COUNT)
+                .setMaxResults(TAKE_COUNT)
                 .getResultList();
     }
 }
