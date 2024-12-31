@@ -1,0 +1,72 @@
+package com._polar._polar_backend_spring.domain.entity;
+
+import com._polar._polar_backend_spring.domain.entity.enums.ReportStatus;
+import jakarta.persistence.*;
+import lombok.Getter;
+
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+@Entity @Getter
+public class Reports {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(length = 500, nullable = true)
+    private String extraCadets;
+
+    @Column(length = 100, nullable = true)
+    private String place;
+
+    @Column(length = 150, nullable = true)
+    private String topic;
+
+    @Column(length = 800, nullable = true)
+    private String content;
+
+    @Column(columnDefinition = "TEXT[]", length = 1000, nullable = true)
+    private List<String> imageUrl;
+
+    @Column(length = 1000, nullable = true)
+    private String signatureUrl;
+
+    @Column(length = 800, nullable = true)
+    private String feedbackMessage;
+
+    @Column(nullable = true)
+    private Integer feedback1;
+
+    @Column(nullable = true)
+    private Integer feedback2;
+
+    @Column(nullable = true)
+    private Integer feedback3;
+
+    @Column(nullable = true)
+    private Integer money;
+
+    @Enumerated(EnumType.STRING)
+    private ReportStatus status = ReportStatus.UNABLE;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentoringLogsId")
+    private MentoringLogs mentoringLogs;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentorId")
+    private Mentors mentors;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cadetId")
+    private Cadets cadets;
+}
