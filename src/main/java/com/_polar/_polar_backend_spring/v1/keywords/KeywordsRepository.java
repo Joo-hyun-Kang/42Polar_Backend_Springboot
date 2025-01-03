@@ -59,7 +59,7 @@ public class KeywordsRepository {
         // 結果リストをループしてマッピング
         for (Object[] row : results) {
             MentorsListInfo mentor = new MentorsListInfo(
-                    (String) row[0], // id
+                    row[0].toString(), // uuid
                     (String) row[1], // name
                     (String) row[2], // intraId
                     (String) row[4], // tags
