@@ -13,7 +13,7 @@ public class UserInfo42OriginDto {
     private String login;
     private String profileImage;
     private List<CursesUser42OriginDto> cursus;
-    private String staff;
+    private Boolean staff;
 }
 
 

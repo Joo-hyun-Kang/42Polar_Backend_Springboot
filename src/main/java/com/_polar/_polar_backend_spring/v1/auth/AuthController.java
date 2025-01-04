@@ -3,9 +3,11 @@ package com._polar._polar_backend_spring.v1.auth;
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +31,9 @@ public class AuthController {
     public String signIn42Intra(@RequestParam("code") String authCode) {
         // 42APIからユーザー情報を取得
         UserInfo42OriginDto userProfile = authService.getProfileBy42Intra(authCode);
-        System.out.println(userProfile);
+        if (userProfile == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "OAuthサーバーからリソスを取得するのに失敗しました");
+        }
 
         // ユーザー情報を検証して DB に保存または更新
 //        var jwtAndJoin = authService.createAndUpdateProfile(userProfile);

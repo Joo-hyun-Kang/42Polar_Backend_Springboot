@@ -5,9 +5,8 @@ import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -19,31 +18,67 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LoginConsumer implements MessageListener {
-    private final Environment env;
+@Slf4j
+public class LoginHandler {
     private final RedisTemplate<String, String> redisTemplate;
+    private static final String LOGIN_QUEUE = "loginQueue";
+    private final Environment env;
 
-    @Override
-    public void onMessage(Message message, byte[] pattern) {
+    public UserInfo42OriginDto handler(String accessToken) {
+        // リトライ設定
+        int maxRetries = 3; // 最大リトライ回数
+        int interval = 500; // リトライ間隔 (ミリ秒)
+
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                Thread.sleep(interval);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "スリープ中に割り込まれました。"
+                );
+            }
+
+            redisTemplate.opsForList().leftPush(LOGIN_QUEUE, accessToken);
+            UserInfo42OriginDto userInfo42OriginDto =  processQueue();
+
+            if (userInfo42OriginDto != null) {
+                return userInfo42OriginDto;
+            }
+        }
+
+        return null;
+    }
+
+    public UserInfo42OriginDto processQueue() {
+        try {
+            String accessToken = redisTemplate.opsForList().rightPop(LOGIN_QUEUE);
+
+            return handleJob(accessToken);
+        } catch (Exception e) {
+            log.error("Redisログインキュー失敗", e);
+
+            return null;
+        }
+    }
+
+    private UserInfo42OriginDto handleJob(String accessToken) {
         final RestTemplate restTemplate = new RestTemplate();
         final ObjectMapper objectMapper = new ObjectMapper();
 
-        String accessToken = new String(message.getBody());
+
         String resourceServerUrl = env.getProperty("RESOURCE_SERVER_42");
 
-        // HttpHeadersを使ってAuthorizationヘッダーを設定
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
         try {
-            // GETリクエストを送信
+            // Authorizationヘッダーの設定
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            // REST APIコール
             ResponseEntity<String> response = restTemplate.exchange(
-                    resourceServerUrl,        // URL
-                    HttpMethod.GET,           // HTTPメソッド
-                    requestEntity,            // リクエストエンティティ（ヘッダー含む）
-                    String.class
-            );
+                    resourceServerUrl, HttpMethod.GET, requestEntity, String.class);
 
             JsonNode responseJson = objectMapper.readTree(response.getBody());
 
@@ -66,20 +101,17 @@ public class LoginConsumer implements MessageListener {
                 }
             }
 
-            // ユーザー情報を DTO に変換
-            UserInfo42OriginDto userInfo = new UserInfo42OriginDto(
+            return new UserInfo42OriginDto(
                     responseJson.get("id").asInt(),
                     responseJson.get("email").asText(),
                     responseJson.get("login").asText(),
                     responseJson.get("image").get("link").asText(),
                     curses,
-                    responseJson.get("staff").asText()
+                    responseJson.get("staff?").asBoolean()
             );
-
-            String userInfoJson = objectMapper.writeValueAsString(userInfo);
-            redisTemplate.opsForValue().set(accessToken, userInfoJson);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "OAuthサーバーからリソスを取得するのに失敗しました", e);
+            log.error("OAuthサーバーからリソスを取得するのに失敗しました", e);
+            return null;
         }
     }
 }

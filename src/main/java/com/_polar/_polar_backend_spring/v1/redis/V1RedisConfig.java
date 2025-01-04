@@ -22,25 +22,4 @@ public class V1RedisConfig {
 
         return template;
     }
-
-    @Bean
-    public ChannelTopic loginQueueTopic() {
-        return new ChannelTopic("loginQueue");
-    }
-
-    @Bean
-    public MessageListenerAdapter messageListenerAdapter(LoginConsumer loginConsumer) {
-        return new MessageListenerAdapter(loginConsumer, "onMessage");
-    }
-
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory connectionFactory,
-            MessageListenerAdapter listenerAdapter,
-            ChannelTopic channelTopic) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, channelTopic);
-        return container;
-    }
 }
