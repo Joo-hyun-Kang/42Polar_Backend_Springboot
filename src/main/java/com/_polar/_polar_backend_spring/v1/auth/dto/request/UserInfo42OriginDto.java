@@ -1,14 +1,18 @@
 package com._polar._polar_backend_spring.v1.auth.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
+@AllArgsConstructor
 public class UserInfo42OriginDto {
     private Integer id;
     private String email;
     private String login;
     private String profileImage;
-    private String cursus;
+    private List<CursesUser42OriginDto> cursus;
     private String staff;
 }
 

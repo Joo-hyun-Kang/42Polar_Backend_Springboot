@@ -12,7 +12,15 @@ spring:
       properties:
         hibernate:
           dialect: org.hibernate.dialect.PostgresSQLDialect
-
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 0
 logging:
   level:
     #logger出力で利用

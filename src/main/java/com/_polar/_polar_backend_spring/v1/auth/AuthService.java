@@ -1,10 +1,12 @@
 package com._polar._polar_backend_spring.v1.auth;
 
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
+import com._polar._polar_backend_spring.v1.redis.LoginProducer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +17,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public class AuthService {
     private final Environment env;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final LoginProducer loginProducer;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     public UserInfo42OriginDto getProfileBy42Intra(String authCode) {
         String providerUrl = String.format(
@@ -24,12 +28,33 @@ public class AuthService {
 
         String accessToken = getAccessToken(authCode, providerUrl);
 
-        return null;
-//        return loginProducer.addJob(tokenResponse.getAccessToken());
+        loginProducer.addJob(accessToken);
+
+        // Redis からユーザー情報を取得
+        String userInfoJson = redisTemplate.opsForValue().get(accessToken);
+
+        if (userInfoJson == null) {
+            throw new ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND,
+                    "ユーザー情報が見つかりません。プロセスが完了するまでお待ちください。"
+            );
+        }
+
+        try {
+            // JSON を DTO に変換して返す
+            return objectMapper.readValue(userInfoJson, UserInfo42OriginDto.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Redis からユーザー情報を取得中にエラーが発生しました。"
+            );
+        }
     }
 
     private String getAccessToken(String authCode, String providerUrl) {
         try {
+            RestTemplate restTemplate = new RestTemplate();
+
             ResponseEntity<String> response = restTemplate.postForEntity(providerUrl, null, String.class);
             /*　System.out.println(response);
                 {
@@ -53,7 +78,7 @@ public class AuthService {
             JsonNode root = objectMapper.readTree(response.getBody());
             final String ACCESS_TOKEN_API_FORM_NAME = "access_token";
 
-            return root.get(ACCESS_TOKEN_API_FORM_NAME).toString();
+            return root.get(ACCESS_TOKEN_API_FORM_NAME).toString().replaceAll("^\"|\"$", "");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "OAuthサーバーからリソスを取得するのに失敗しました", e);
         }

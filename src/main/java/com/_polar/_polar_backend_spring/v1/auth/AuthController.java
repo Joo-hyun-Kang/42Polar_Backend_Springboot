@@ -26,9 +26,10 @@ public class AuthController {
     }
 
     @GetMapping("/auth/oauth/callback")
-        public String signIn42Intra(@RequestParam("code") String authCode) {
+    public String signIn42Intra(@RequestParam("code") String authCode) {
         // 42APIからユーザー情報を取得
         UserInfo42OriginDto userProfile = authService.getProfileBy42Intra(authCode);
+        System.out.println(userProfile);
 
         // ユーザー情報を検証して DB に保存または更新
 //        var jwtAndJoin = authService.createAndUpdateProfile(userProfile);
