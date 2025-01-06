@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +33,9 @@ public class LoginHandler {
                 Thread.sleep(interval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "スリープ中に割り込まれました。"
-                );
+                log.error("Redisログインキュー失敗", e);
+
+                return null;
             }
 
             redisTemplate.opsForList().leftPush(LOGIN_QUEUE, accessToken);
@@ -51,7 +49,7 @@ public class LoginHandler {
         return null;
     }
 
-    public UserInfo42OriginDto processQueue() {
+    private UserInfo42OriginDto processQueue() {
         try {
             String accessToken = redisTemplate.opsForList().rightPop(LOGIN_QUEUE);
 
@@ -66,7 +64,6 @@ public class LoginHandler {
     private UserInfo42OriginDto handleJob(String accessToken) {
         final RestTemplate restTemplate = new RestTemplate();
         final ObjectMapper objectMapper = new ObjectMapper();
-
 
         String resourceServerUrl = env.getProperty("RESOURCE_SERVER_42");
 

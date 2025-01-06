@@ -35,7 +35,7 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "OAuthサーバーからリソスを取得するのに失敗しました");
         }
 
-        // ユーザー情報を検証して DB に保存または更新
+        // ユーザの情報バーリデーションと最初ローグインの場合DBに登録する
 //        var jwtAndJoin = authService.createAndUpdateProfile(userProfile);
 //
 //        // JWT トークンを生成
