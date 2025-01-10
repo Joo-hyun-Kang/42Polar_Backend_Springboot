@@ -22,4 +22,12 @@ public class Bocals {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    public Bocals(String intraId) {
+        this.intraId = intraId;
+    }
+
+    public void setIntraId(String intraId) {
+        this.intraId = intraId;
+    }
 }

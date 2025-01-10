@@ -1,7 +1,11 @@
 package com._polar._polar_backend_spring.domain.entity;
 
+import com._polar._polar_backend_spring.domain.dto.AvailableTimeDto;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@Entity @Getter
+@Entity @Getter @Setter
 public class Mentors {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -69,4 +73,30 @@ public class Mentors {
 
     @OneToMany(mappedBy = "mentors")
     private List<Reports> reports = new ArrayList<>();
+
+    public Mentors(String intraId) {
+        this.intraId = intraId;
+        this.isActive = false;
+    }
+
+    public boolean isInitialized() {
+        if (slackId == null || email == null || name == null ||
+                duty == null || company == null) {
+            return false;
+        }
+
+        if (isActive && availableTime == null) {
+            return false;
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<List<AvailableTimeDto>> week = objectMapper.readValue(availableTime, new TypeReference<>() {});
+
+            return week.stream().anyMatch(day -> !day.isEmpty());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

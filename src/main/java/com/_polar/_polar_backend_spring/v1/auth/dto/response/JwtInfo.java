@@ -6,7 +6,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class AuthResponse {
-    private JwtInfo jwtinfo;
-    private boolean isJoined;
+public class JwtInfo {
+    private String id;
+    private String intraId;
+    private ROLES role;
 }
