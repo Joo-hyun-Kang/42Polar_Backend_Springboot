@@ -82,7 +82,7 @@ public class AuthService {
         }
     }
 
-    public AuthResponse createAndUpdateProfile(UserInfo42OriginDto userProfile) {
+    public JwtInfo createAndUpdateProfile(UserInfo42OriginDto userProfile) {
         // 必要な情報を抽出
         String intraId = userProfile.getLogin();
         boolean isStaff = userProfile.getStaff();
@@ -106,7 +106,7 @@ public class AuthService {
                 isJoined = mentors.isInitialized();
             }
 
-            return new AuthResponse(new JwtInfo(mentors.getId().toString(), mentors.getIntraId(), ROLES.MENTOR), isJoined);
+            return new JwtInfo(mentors.getIntraId(), ROLES.MENTOR, isJoined);
         }
 
         if (isStaff) {
@@ -120,7 +120,7 @@ public class AuthService {
                 bocalsService.updateLogin(bocal, intraId);
             }
 
-            return new AuthResponse(new JwtInfo(bocal.getId().toString(), bocal.getIntraId(), ROLES.BOCAL), isJoined);
+            return new JwtInfo(bocal.getIntraId(), ROLES.BOCAL, isJoined);
         }
 
         if (cursus.size() < 2 || isBlackholed(cursus)) {
@@ -142,7 +142,7 @@ public class AuthService {
             isJoined = cadet.isInitialized();
         }
 
-        return new AuthResponse(new JwtInfo(cadet.getId().toString(), cadet.getIntraId(), ROLES.CADET), isJoined);
+        return new JwtInfo(cadet.getIntraId(), ROLES.CADET, isJoined);
     }
 
     private boolean getGrade(List<CursesUser42OriginDto> cursus) {
