@@ -1,11 +1,15 @@
 package com._polar._polar_backend_spring.v1.auth;
 
+import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
+import com._polar._polar_backend_spring.v1.auth.decorators.Roles;
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import com._polar._polar_backend_spring.v1.auth.dto.response.AuthResponse;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfo;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfoAndJoin;
 import com._polar._polar_backend_spring.v1.auth.dto.response.UserInfo;
+import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +21,35 @@ import java.nio.file.AccessDeniedException;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     private final AuthService authService;
     private final JwtHandler jwtHandler;
     private final Environment env;
+
+    @AuthGuard()
+    @Roles({ROLES.MENTOR, ROLES.CADET})
+    @GetMapping("api/v1/interceptor")
+    public String validation() throws AccessDeniedException {
+        log.info("validation");
+//        throw new AccessDeniedException("aaa");
+        return "validation";
+    }
+
+//    @GetMapping("/interceptor")
+//    public String validation(HttpServletRequest request) {
+//        Claims user = (Claims) request.getAttribute("user");
+//        if (user == null) {
+//            return "No user data found";
+//        }
+//
+//        String username = user.get("username", String.class);
+//        String role = user.get("role", String.class);
+//
+//        return String.format("Authenticated user: %s, Role: %s", username, role);
+//    }
+
+
 
     @GetMapping("api/v1/login")
     public String login() {

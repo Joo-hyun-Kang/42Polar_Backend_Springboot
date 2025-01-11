@@ -1,18 +1,12 @@
 package com._polar._polar_backend_spring.v1.auth;
 
-import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.lettuce.core.dynamic.annotation.Key;
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.*;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.SignatureException;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,5 +47,14 @@ public class JwtHandler {
                 .setExpiration(new Date(now.getTime() + JWT_EXPIRE_ONE_DAY)) // 有効期限
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
