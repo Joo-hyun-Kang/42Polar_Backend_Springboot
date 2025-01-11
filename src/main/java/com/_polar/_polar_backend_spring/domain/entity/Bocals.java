@@ -2,10 +2,15 @@ package com._polar._polar_backend_spring.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.util.Date;
 import java.util.UUID;
 
 @Entity @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Bocals {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -17,11 +22,17 @@ public class Bocals {
     @Column(length = 50, unique = true, nullable = false)
     private String intraId;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    //JPAが使うため、
+    public Bocals() {
+    }
 
     public Bocals(String intraId) {
         this.intraId = intraId;

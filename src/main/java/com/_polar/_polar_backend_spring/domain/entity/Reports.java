@@ -3,6 +3,9 @@ package com._polar._polar_backend_spring.domain.entity;
 import com._polar._polar_backend_spring.domain.entity.enums.ReportStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Reports {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -51,10 +55,12 @@ public class Reports {
     @Enumerated(EnumType.STRING)
     private ReportStatus status = ReportStatus.UNABLE;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)
     private Date createdAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 

@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter
+@EntityListeners(AuditingEntityListener.class)
 public class Mentors {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -56,9 +60,11 @@ public class Mentors {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String markdownContent;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date createAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateAt;
 
@@ -73,6 +79,10 @@ public class Mentors {
 
     @OneToMany(mappedBy = "mentors")
     private List<Reports> reports = new ArrayList<>();
+
+    //JPAが使うため、
+    public Mentors() {
+    }
 
     public Mentors(String intraId) {
         this.intraId = intraId;

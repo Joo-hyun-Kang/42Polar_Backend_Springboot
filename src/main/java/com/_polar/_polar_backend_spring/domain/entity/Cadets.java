@@ -3,6 +3,9 @@ package com._polar._polar_backend_spring.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter
+@EntityListeners(AuditingEntityListener.class)
 public class Cadets {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,9 +37,11 @@ public class Cadets {
     @Column(length = 100, nullable = false)
     private String email;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
@@ -47,6 +53,10 @@ public class Cadets {
 
     @OneToMany(mappedBy = "cadets")
     private List<Reports> reports;
+
+    //JPAが使うため、
+    public Cadets() {
+    }
 
     public Cadets(String intraId, String profileImage, boolean isCommon, String email) {
         this.intraId = intraId;
