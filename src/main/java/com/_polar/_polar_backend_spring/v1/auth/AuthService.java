@@ -7,6 +7,7 @@ import com._polar._polar_backend_spring.v1.auth.dto.request.CursesUser42OriginDt
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import com._polar._polar_backend_spring.v1.auth.dto.response.AuthResponse;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfo;
+import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfoAndJoin;
 import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.bocals.BocalsService;
 import com._polar._polar_backend_spring.v1.cadets.CadetsService;
@@ -82,7 +83,7 @@ public class AuthService {
         }
     }
 
-    public JwtInfo createAndUpdateProfile(UserInfo42OriginDto userProfile) {
+    public JwtInfoAndJoin createAndUpdateProfile(UserInfo42OriginDto userProfile) {
         // 必要な情報を抽出
         String intraId = userProfile.getLogin();
         boolean isStaff = userProfile.getStaff();
@@ -101,12 +102,16 @@ public class AuthService {
                 mentors = mentorsService.createUser(intraId);
                 isJoined = false;
             } else {
-                mentors = mentorsService.findByIntra(intraId);
+                mentors = mentorsService.findByIntraOrNull(intraId);
+                if (mentors == null) {
+                    return null;
+                }
+
                 //メンターが最初ログイン後、情報入力したか確認
                 isJoined = mentors.isInitialized();
             }
 
-            return new JwtInfo(mentors.getIntraId(), ROLES.MENTOR, isJoined);
+            return new JwtInfoAndJoin(new JwtInfo(mentors.getId().toString(), mentors.getIntraId(), ROLES.MENTOR.getRole()), isJoined);
         }
 
         if (isStaff) {
@@ -116,11 +121,15 @@ public class AuthService {
             if (!bocalsService.isBocal(intraId)) {
                 bocal = bocalsService.createUser(intraId);
             } else {
-                bocal = bocalsService.findByIntra(intraId);
+                bocal = bocalsService.findByIntraOrNull(intraId);
+                if (bocal == null) {
+                    return null;
+                }
+
                 bocalsService.updateLogin(bocal, intraId);
             }
 
-            return new JwtInfo(bocal.getIntraId(), ROLES.BOCAL, isJoined);
+            return new JwtInfoAndJoin(new JwtInfo(bocal.getId().toString(), bocal.getIntraId(), ROLES.BOCAL.getRole()), isJoined);
         }
 
         if (cursus.size() < 2 || isBlackholed(cursus)) {
@@ -136,13 +145,16 @@ public class AuthService {
 
         } else {
             CreateCadetDto updateData = new CreateCadetDto(intraId, profileImage, getGrade(cursus), email);
-            cadet = cadetsService.findByIntraId(intraId);
+            cadet = cadetsService.findByIntraIdOrNull(intraId);
+            if (cadet == null) {
+                return null;
+            }
             cadetsService.updateLogin(cadet, updateData);
 
             isJoined = cadet.isInitialized();
         }
 
-        return new JwtInfo(cadet.getIntraId(), ROLES.CADET, isJoined);
+        return new JwtInfoAndJoin(new JwtInfo(cadet.getId().toString(), cadet.getIntraId(), ROLES.CADET.getRole()), isJoined);
     }
 
     private boolean getGrade(List<CursesUser42OriginDto> cursus) {

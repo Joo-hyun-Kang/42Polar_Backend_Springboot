@@ -3,6 +3,8 @@ package com._polar._polar_backend_spring.v1.auth;
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import com._polar._polar_backend_spring.v1.auth.dto.response.AuthResponse;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfo;
+import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfoAndJoin;
+import com._polar._polar_backend_spring.v1.auth.dto.response.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -40,13 +42,14 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "OAuthサーバーからリソスを取得するのに失敗しました");
         }
 
-        JwtInfo jwtInfo = authService.createAndUpdateProfile(userProfile);
-        if (jwtInfo == null) {
-            throw new AccessDeniedException("42cursusに属している方しか利用できます。");
+        JwtInfoAndJoin jwtInfoAndJoin = authService.createAndUpdateProfile(userProfile);
+        if (jwtInfoAndJoin == null) {
+            throw new AccessDeniedException("アクセスする権限がありません。");
         }
 
-        String jwtToken = jwtHandler.sign(userProfile.getId().toString(), jwtInfo.getIntraId(), jwtInfo.getRole());
+        JwtInfo jwtInfo = jwtInfoAndJoin.getJwtInfo();
+        String jwtToken = jwtHandler.sign(jwtInfo.getId(), jwtInfo.getIntraId(), jwtInfo.getRole());
 
-        return new AuthResponse(jwtToken, jwtInfo);
+        return new AuthResponse(jwtToken, new UserInfo(jwtInfo.getIntraId(), jwtInfo.getRole(), jwtInfoAndJoin.isJoined()));
     }
 }

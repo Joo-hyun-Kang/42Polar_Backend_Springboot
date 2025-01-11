@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class JwtInfo {
+    private String id;
     private String intraId;
-    private ROLES role;
-    private boolean join;
+    private String role;
 }

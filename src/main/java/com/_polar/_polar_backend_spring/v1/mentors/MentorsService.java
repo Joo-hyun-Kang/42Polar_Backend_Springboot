@@ -14,11 +14,11 @@ public class MentorsService {
     private final MentorsRepository mentorsRepository;
 
     public boolean isMentor(String intraId) {
-        return mentorsRepository.findByIntra(intraId) != null;
+        return mentorsRepository.findByIntraOrNull(intraId) != null;
     }
 
-    public Mentors findByIntra(String intraId) {
-        return mentorsRepository.findByIntra(intraId);
+    public Mentors findByIntraOrNull(String intraId) {
+        return mentorsRepository.findByIntraOrNull(intraId);
     }
 
     @Transactional

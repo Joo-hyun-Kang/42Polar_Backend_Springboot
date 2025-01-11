@@ -14,11 +14,11 @@ public class BocalsService {
     private final BocalsRepository bocalsRepository;
 
     public boolean isBocal(String intraId) {
-        return bocalsRepository.findByIntra(intraId) != null;
+        return bocalsRepository.findByIntraOrNull(intraId) != null;
     }
 
-    public Bocals findByIntra(String intraId) {
-        return bocalsRepository.findByIntra(intraId);
+    public Bocals findByIntraOrNull(String intraId) {
+        return bocalsRepository.findByIntraOrNull(intraId);
     }
 
     @Transactional
