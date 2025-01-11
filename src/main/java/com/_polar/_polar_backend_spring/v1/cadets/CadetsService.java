@@ -14,13 +14,14 @@ public class CadetsService {
     private final CadetsRepository cadetsRepository;
 
     public boolean isCadet(String intraId) {
-        return cadetsRepository.findByIntra(intraId) != null;
+        return cadetsRepository.findByIntraOrNull(intraId) != null;
     }
 
-    public Cadets findByIntraId(String intraId) {
-        return cadetsRepository.findByIntra(intraId);
+    public Cadets findByIntraIdOrNull(String intraId) {
+        return cadetsRepository.findByIntraOrNull(intraId);
     }
 
+    @Transactional
     public Cadets createUser(CreateCadetDto cadetDto) {
 
         Cadets cadet = new Cadets(cadetDto.getIntraId(), cadetDto.getProfileImage(), cadetDto.isCommon(), cadetDto.getEmail());
@@ -29,14 +30,11 @@ public class CadetsService {
         return cadet;
     }
 
+    @Transactional
     public void updateLogin(Cadets cadet, CreateCadetDto updateData) {
         cadet.setIntraId(updateData.getIntraId());
         cadet.setProfileImage(updateData.getProfileImage());
         cadet.setCommon(updateData.isCommon());
         cadet.setEmail(updateData.getEmail());
-    }
-
-    public boolean validateInfo(Cadets cadet) {
-        return cadet.getName() != null;
     }
 }
