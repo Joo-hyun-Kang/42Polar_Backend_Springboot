@@ -1,13 +1,17 @@
 package com._polar._polar_backend_spring.v1.config;
 
 import com._polar._polar_backend_spring.v1.auth.interceptors.AuthInterceptor;
+import com._polar._polar_backend_spring.v1.auth.argumentResolver.AuthInfoResolver;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 @AllArgsConstructor
@@ -42,5 +46,11 @@ public class V1WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor)
                 .order(1)
                 .addPathPatterns("/api/v1/**");
+    }
+
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new AuthInfoResolver());
     }
 }

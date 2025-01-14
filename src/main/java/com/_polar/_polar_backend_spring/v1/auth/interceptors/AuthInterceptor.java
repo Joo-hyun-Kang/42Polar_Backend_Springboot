@@ -2,6 +2,7 @@ package com._polar._polar_backend_spring.v1.auth.interceptors;
 
 import com._polar._polar_backend_spring.v1.auth.JwtHandler;
 import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
+import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
 import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -37,7 +38,17 @@ public class AuthInterceptor implements HandlerInterceptor {
                 Claims claims = null;
                 try {
                     claims = jwtHandler.parseToken(token);
-                    request.setAttribute("user", claims);
+
+                    String id = (String) claims.get("sub");
+                    String role = (String) claims.get("role");
+                    String intraId = (String) claims.get("username");
+
+                    if (id == null || role == null || intraId == null) {
+                        throw new AccessDeniedException("正しいトークンを持っていません。");
+                    }
+
+                    //AuthInfoResolverに使用
+                    request.setAttribute("authInfo", new AuthInfo(id, role, intraId));
                 } catch (Exception e) {
                     throw new AccessDeniedException("正しいトークンを持っていません。");
                 }
