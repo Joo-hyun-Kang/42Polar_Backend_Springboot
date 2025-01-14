@@ -2,55 +2,91 @@ package com._polar._polar_backend_spring.v1.auth.interceptors;
 
 import com._polar._polar_backend_spring.v1.auth.JwtHandler;
 import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
-import com._polar._polar_backend_spring.v1.auth.decorators.Roles;
+import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final JwtHandler jwtHandler;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod hm = (HandlerMethod) handler;
+        if (handler instanceof HandlerMethod hm) {
+            AuthGuard authGuardAnnotation = hm.getMethodAnnotation(AuthGuard.class);
 
-            AuthGuard isAuthGuard = hm.getMethodAnnotation(AuthGuard.class);
-
-            if (isAuthGuard != null) {
+            if (authGuardAnnotation != null) {
                 String token = extractTokenOrNull(request);
                 if (token == null) {
                     throw new AccessDeniedException("Unauthorized: No JWT token provided");
                 }
 
+                //正しいJWTトークンを持っているか検証
+                Claims claims = null;
                 try {
-                    Claims claims = jwtHandler.parseToken(token);
+                    claims = jwtHandler.parseToken(token);
                     request.setAttribute("user", claims);
-                } catch (
-                        Exception e) {
+                } catch (Exception e) {
                     throw new AccessDeniedException("正しいトークンを持っていません。");
+                }
+
+                //Roleに応じてコントローラーに接近制限
+                ROLES[] rolesOfPermission = authGuardAnnotation.value();
+                if (rolesOfPermission.length > 0) {
+                    String roleFromToken = extractRolesOrNull(claims);
+                    if (roleFromToken == null) {
+                        throw new AccessDeniedException("正しいトークン形ではありません。：Roleを持っていないリクエスト");
+                    }
+
+                    if (!isRolesPremised(roleFromToken, rolesOfPermission)) {
+                        throw new AccessDeniedException("接近可能な役割を持っておりません。");
+                    }
                 }
             }
         }
+
         return true;
     }
 
-    private String extractTokenOrNull(HttpServletRequest request) {
-        final String API_TOKEN_COOKIE_NAME = "access_token";
-        final String API_TOKEN_HEADER_NAME = "Authorization";
+    private String extractRolesOrNull(Claims claims) {
+        try {
+            final String ROLE_KEY_NAME = "role";
+            Object roleName = claims.get(ROLE_KEY_NAME);
+            return roleName.toString();
+        } catch (Exception e) {
+            log.error(e.toString());
+            return null;
+        }
+    }
 
+    private boolean isRolesPremised(String roleFromToken, ROLES[] rolesOfPermission) {
+        boolean isRoleIn = false;
+        for (ROLES roles : rolesOfPermission) {
+            if (roles.getRole().equals(roleFromToken)) {
+                isRoleIn = true;
+                break;
+            }
+        }
+
+        return isRoleIn;
+    }
+
+    private String extractTokenOrNull(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+
+        final String API_TOKEN_HEADER_NAME = "Authorization";
         String authorizationHeader = request.getHeader(API_TOKEN_HEADER_NAME);
 
         //ユーザーがトークンを持っていないまま、リクエスト
@@ -58,14 +94,15 @@ public class AuthInterceptor implements HandlerInterceptor {
             return null;
         }
 
+        // プロントでCookieおよびHeaderにJwtToken載せられてくるケースがあり
         if (cookies != null) {
-            return parseCookies(API_TOKEN_COOKIE_NAME, cookies);
+            return parseCookies(cookies);
         } else {
-            return extractToken(authorizationHeader);
+            return extractTokenFromHeader(authorizationHeader);
         }
     }
 
-    private static String extractToken(String authorizationHeader) {
+    private String extractTokenFromHeader(String authorizationHeader) {
         if (authorizationHeader.startsWith("Bearer ") || authorizationHeader.startsWith("bearer ") ) {
             return authorizationHeader.substring(7);
         }
@@ -73,7 +110,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         return null;
     }
 
-    private static String parseCookies(String API_TOKEN_COOKIE_NAME, Cookie[] cookies) {
+    private String parseCookies(Cookie[] cookies) {
+        final String API_TOKEN_COOKIE_NAME = "access_token";
+
         boolean isTokenIn = false;
         String token = null;
         for (Cookie cookie : cookies) {

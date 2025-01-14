@@ -1,7 +1,6 @@
 package com._polar._polar_backend_spring.v1.config;
 
 import com._polar._polar_backend_spring.v1.auth.interceptors.AuthInterceptor;
-import com._polar._polar_backend_spring.v1.auth.interceptors.RoleInterceptor;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.context.annotation.Bean;
@@ -43,10 +42,5 @@ public class V1WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor)
                 .order(1)
                 .addPathPatterns("/api/v1/**");
-
-//        registry.addInterceptor(new RoleInterceptor())
-//                .order(2)
-//                .addPathPatterns("/api/v1/**");
-
     }
 }
