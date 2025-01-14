@@ -6,6 +6,9 @@ import com._polar._polar_backend_spring.domain.entity.Reports;
 import com._polar._polar_backend_spring.domain.entity.enums.LogStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -13,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@Entity @Getter
+@Entity @Getter @EntityListeners(AuditingEntityListener.class)
 public class MentoringLogs {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -47,9 +50,11 @@ public class MentoringLogs {
     @Column(columnDefinition = "TIMESTAMP[]", nullable = true)
     private List<Date> requestTime3;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateAt;
 

@@ -2,12 +2,16 @@ package com._polar._polar_backend_spring.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Comments {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,9 +27,11 @@ public class Comments {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateAt;
 
