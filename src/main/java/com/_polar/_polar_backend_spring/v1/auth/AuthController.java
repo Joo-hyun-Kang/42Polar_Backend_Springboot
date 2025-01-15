@@ -1,12 +1,10 @@
 package com._polar._polar_backend_spring.v1.auth;
 
-import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
 import com._polar._polar_backend_spring.v1.auth.dto.response.AuthResponse;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfo;
 import com._polar._polar_backend_spring.v1.auth.dto.response.JwtInfoAndJoin;
 import com._polar._polar_backend_spring.v1.auth.dto.response.UserInfo;
-import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -25,30 +23,6 @@ public class AuthController {
     private final AuthService authService;
     private final JwtHandler jwtHandler;
     private final Environment env;
-
-    @AuthGuard({})
-    @GetMapping("api/v1/interceptor")
-    public String validation() throws AccessDeniedException {
-        log.info("validation");
-//        throw new AccessDeniedException("aaa");
-        return "validation";
-    }
-
-    @AuthGuard({ROLES.MENTOR})
-    @GetMapping("api/v1/interceptor/single")
-    public String validation2() {
-        log.info("validation");
-//        throw new AccessDeniedException("aaa");
-        return "validation";
-    }
-
-    @AuthGuard({ROLES.CADET, ROLES.BOCAL})
-    @GetMapping("api/v1/interceptor/double")
-    public String validation3() {
-        log.info("validation");
-//        throw new AccessDeniedException("aaa");
-        return "validation";
-    }
 
     @GetMapping("api/v1/login")
     public String login() {

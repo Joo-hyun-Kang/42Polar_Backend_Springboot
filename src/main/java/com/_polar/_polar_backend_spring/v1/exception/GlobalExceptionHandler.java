@@ -2,12 +2,9 @@ package com._polar._polar_backend_spring.v1.exception;
 
 import com._polar._polar_backend_spring.v1.exception.dto.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.NoResultException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,17 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.nio.file.AccessDeniedException;
+import java.sql.SQLException;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    private static final String CONFLICTEXCEPTION_SEARCH = "データ検索の中に問題が生じました";
-    private static final String CONFLICTEXCEPTION_SAVE = "データ保存の中に予期しないエラーが発生しました。";
-    private static final String CONFLICTEXCEPTION_DELETE = "データ削除の中に予期しないエラーが発生しました。";
-    private static final String CONFLICTEXCEPTION_UPDATE = "データ更新の中に予期しないエラーが発生しました。";
-    private static final String NOTFOUNDEXCEPTION = "データを見当たらないです";
-    private static final String UNAUTHORIZEDEXCEPTION = "アクセスする権限がありません";
-    private static final String BADREQUESTEXCEPTION = "APIから求める形に当てはまっていません";
+    public static final String CONFLICTEXCEPTION_SEARCH = "データ検索の中に問題が生じました";
+    public static final String CONFLICTEXCEPTION_SAVE = "データ保存の中に予期しないエラーが発生しました。";
+    public static final String CONFLICTEXCEPTION_DELETE = "データ削除の中に予期しないエラーが発生しました。";
+    public static final String CONFLICTEXCEPTION_UPDATE = "データ更新の中に予期しないエラーが発生しました。";
+    public static final String NOTFOUNDEXCEPTION = "データを見当たらないです";
+    public static final String UNAUTHORIZEDEXCEPTION = "アクセスする権限がありません";
+    public static final String BADREQUESTEXCEPTION = "APIから求める形に当てはまっていません";
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
@@ -41,15 +39,14 @@ public class GlobalExceptionHandler {
         log.error("[Exception] NoResourceFoundException: ", e);
 
         //"Cannot GET /api/v1/categories//%EF%BC%91%EF%BC%91/keywords"
-        StringBuilder sb = new StringBuilder();
-        sb.append("Cannot ");
-        sb.append(request.getMethod());
-        sb.append(" ");
-        sb.append(request.getRequestURI());
+        String sb = "Cannot " +
+                request.getMethod() +
+                " " +
+                request.getRequestURI();
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(sb.toString(), "Not Found", HttpStatus.NOT_FOUND.value()));
+                .body(new ErrorResponse(sb, "Not Found", HttpStatus.NOT_FOUND.value()));
     }
 
 
@@ -70,18 +67,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(NOTFOUNDEXCEPTION, "Not Found", HttpStatus.NOT_FOUND.value()));
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+    @ExceptionHandler(SQLException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(SQLException e) {
         log.error("[Exception] DataIntegrityViolationException: ", e);
 
         String message = "予期しないエラーが発生しました。";
-        if (e.getMessage().contains("search")) {
+        if (e.getMessage().contains(CONFLICTEXCEPTION_SEARCH)) {
             message = CONFLICTEXCEPTION_SEARCH;
-        } else if (e.getMessage().contains("save")) {
+        } else if (e.getMessage().contains(CONFLICTEXCEPTION_SAVE)) {
             message = CONFLICTEXCEPTION_SAVE;
-        } else if (e.getMessage().contains("delete")) {
+        } else if (e.getMessage().contains(CONFLICTEXCEPTION_DELETE)) {
             message = CONFLICTEXCEPTION_DELETE;
-        } else if (e.getMessage().contains("update")) {
+        } else if (e.getMessage().contains(CONFLICTEXCEPTION_UPDATE)) {
             message = CONFLICTEXCEPTION_UPDATE;
         }
 

@@ -1,7 +1,6 @@
 package com._polar._polar_backend_spring.v1.categories;
 
 import com._polar._polar_backend_spring.domain.entity.Categories;
-import com._polar._polar_backend_spring.domain.entity.KeywordCategories;
 import com._polar._polar_backend_spring.v1.categories.dto.response.CategoryKeywordsDto;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListByCategory;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListElement;
@@ -21,7 +20,6 @@ public class CategoriesService {
     public CategoryKeywordsDto getKeywords(String categoryName) {
         Categories relatedCategoryKeyword = categoriesRepository.getRelatedCategoryKeyword(categoryName);
 
-        List<KeywordCategories> keywordCategories = relatedCategoryKeyword.getKeywordCategories();
         List<String> keywords = relatedCategoryKeyword.getKeywordCategories().stream()
                 .map(keywordCategory -> keywordCategory.getKeywords().getName())
                 .collect(Collectors.toList());
@@ -43,5 +41,22 @@ public class CategoriesService {
                 mentorList.size(),
                 mentorList
         );
+    }
+
+    public List<CategoryKeywordsDto> getAllCategoryKeyword() {
+        List<Categories> categories = categoriesRepository.getAllCategoryKeyword();
+
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+
+        return categories.stream()
+                .map(category -> new CategoryKeywordsDto(
+                        category.getName(),
+                        category.getKeywordCategories().stream()
+                                .map(keywordCategory -> keywordCategory.getKeywords().getName())
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 }
