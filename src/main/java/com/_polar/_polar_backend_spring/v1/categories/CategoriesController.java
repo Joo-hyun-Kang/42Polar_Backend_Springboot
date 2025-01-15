@@ -1,13 +1,17 @@
 package com._polar._polar_backend_spring.v1.categories;
 
 import com._polar._polar_backend_spring.domain.entity.Categories;
+import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
+import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.categories.dto.request.MentorKeywordsDto;
 import com._polar._polar_backend_spring.v1.categories.dto.response.CategoriesDto;
 import com._polar._polar_backend_spring.v1.categories.dto.response.CategoryKeywordsDto;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListByCategory;
+import com._polar._polar_backend_spring.v1.exception.GlobalExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +39,21 @@ public class CategoriesController {
         }
 
         return result;
+    }
+
+
+    /*
+     * メンター詳細ページでメンタが自分のキーワードを追加、削除する時に使う
+     */
+    @AuthGuard({ROLES.MENTOR})
+    @GetMapping("/category/keywords")
+    public List<CategoryKeywordsDto> getCategoriesWithKeywords() throws SQLException {
+        List<CategoryKeywordsDto> categoryKeywords = categoriesService.getAllCategoryKeyword();
+        if (categoryKeywords == null) {
+            throw new SQLException(GlobalExceptionHandler.CONFLICTEXCEPTION_SEARCH);
+        }
+
+        return categoryKeywords;
     }
 
     /*

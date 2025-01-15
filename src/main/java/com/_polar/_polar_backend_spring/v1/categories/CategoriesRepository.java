@@ -30,4 +30,12 @@ public class CategoriesRepository {
                     .setParameter("name", name)
                     .getSingleResult();
     }
+
+    public List<Categories> getAllCategoryKeyword() {
+            return em.createQuery(
+                    "select c from Categories c " +
+                            "join fetch c.keywordCategories kc " +
+                            "join fetch kc.keywords", Categories.class)
+                    .getResultList();
+    }
 }
