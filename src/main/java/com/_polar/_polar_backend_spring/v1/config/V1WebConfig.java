@@ -3,6 +3,8 @@ package com._polar._polar_backend_spring.v1.config;
 import com._polar._polar_backend_spring.v1.auth.interceptors.AuthInterceptor;
 import com._polar._polar_backend_spring.v1.auth.argumentResolver.AuthInfoResolver;
 import lombok.AllArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +41,14 @@ public class V1WebConfig implements WebMvcConfigurer {
                         .allowCredentials(true);
             }
         };
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:errors");
+        messageSource.setDefaultEncoding("UTF-8");
+        return messageSource;
     }
 
     @Override
