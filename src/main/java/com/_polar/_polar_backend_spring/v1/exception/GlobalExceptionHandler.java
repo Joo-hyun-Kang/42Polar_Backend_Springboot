@@ -106,7 +106,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<SpringValidationResponse> handleTypeAndBeanValidationExceptions(MethodArgumentNotValidException ex, Locale locale) {
+    public ResponseEntity<SpringValidationResponse> handleTypeAndBeanValidationExceptions(MethodArgumentNotValidException ex, Locale locale, HttpServletRequest request) {
         ArrayList<String> messages = new ArrayList<>();
         BindingResult bindingResult = ex.getBindingResult();
 
@@ -114,6 +114,8 @@ public class GlobalExceptionHandler {
             String errorMessage = messageSource.getMessage(error, locale);
             messages.add(errorMessage);
         }
+
+        log.error("[Exception] MethodArgumentNotValidException: " + request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body((new SpringValidationResponse(messages,"Bad Request", HttpStatus.BAD_REQUEST.value())));
