@@ -9,8 +9,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,11 +24,11 @@ public class MentoringLogs {
     private UUID id;
 
     @Column(columnDefinition = "TIMESTAMP[]", nullable = true)
-    private List<Date> meetingAt = new ArrayList<>();
+    private List<LocalDateTime> meetingAt = new ArrayList<>();
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = true)
-    private Date meetingStart;
+    private LocalDateTime meetingStart;
 
     @Column(length = 100, nullable = false)
     private String topic;
@@ -43,21 +43,21 @@ public class MentoringLogs {
     private String rejectMessage;
 
     @Column(columnDefinition = "TIMESTAMP[]")
-    private List<Date> requestTime1;
+    private List<LocalDateTime> requestTime1;
 
     @Column(columnDefinition = "TIMESTAMP[]", nullable = true)
-    private List<Date> requestTime2;
+    private List<LocalDateTime> requestTime2;
 
     @Column(columnDefinition = "TIMESTAMP[]", nullable = true)
-    private List<Date> requestTime3;
+    private List<LocalDateTime> requestTime3;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updateAt;
+    private LocalDateTime updateAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentorsId")
