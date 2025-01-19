@@ -48,7 +48,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                     }
 
                     //AuthInfoResolverに使用
-                    request.setAttribute("authInfo", new AuthInfo(id, role, intraId));
+                    request.setAttribute("authInfo", new AuthInfo(id, intraId, role));
                 } catch (Exception e) {
                     throw new AccessDeniedException("正しいトークンを持っていません。");
                 }
