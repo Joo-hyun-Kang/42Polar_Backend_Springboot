@@ -29,4 +29,18 @@ public class MentoringLogsRepository {
                 .setFirstResult(take * (page - 1))
                 .getResultList();
     }
+
+    public List<MentoringLogs> getMentoringsLists(String intraId, int take, int page) {
+        return em.createQuery("select ml FROM MentoringLogs ml " +
+                                        "left join fetch ml.cadets c " +
+                                        "left join fetch ml.reports r " +
+                                        "join ml.mentors m " +
+                                        "WHERE m.intraId = :intraId " +
+                                        "ORDER BY ml.createdAt DESC"
+                        , MentoringLogs.class)
+                .setParameter("intraId", intraId)
+                .setMaxResults(take)
+                .setFirstResult(take * (page - 1))
+                .getResultList();
+    }
 }

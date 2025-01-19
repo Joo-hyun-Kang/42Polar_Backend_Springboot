@@ -1,8 +1,14 @@
 package com._polar._polar_backend_spring.v1.mentors;
 
 import com._polar._polar_backend_spring.domain.entity.MentoringLogs;
+import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
+import com._polar._polar_backend_spring.v1.auth.decorators.AuthInfoResolver;
+import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
+import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.dto.request.PaginationDto;
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
+import com._polar._polar_backend_spring.v1.mentors.response.MentoringInfoDto;
+import com._polar._polar_backend_spring.v1.mentors.response.MentoringLogsDto;
 import com._polar._polar_backend_spring.v1.mentors.response.SimpleLogDto;
 import com._polar._polar_backend_spring.v1.mentors.response.SimpleMentoringInfoDto;
 import jakarta.validation.Valid;
@@ -22,6 +28,20 @@ import java.util.List;
 @Slf4j
 public class MentorsController {
     private final MentoringLogsService mentoringLogsService;
+
+    /*
+     * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
+     */
+    @AuthGuard({ROLES.MENTOR})
+    @GetMapping("/mentorings")
+    public MentoringInfoDto getMentoringsLists(@AuthInfoResolver AuthInfo authInfo, @Valid PaginationDto paginationDto) {
+        System.out.println(authInfo);
+
+        List<MentoringLogsDto> MentoringLogsDtos = mentoringLogsService.getMentoringsLists(authInfo.getIntraId(), paginationDto);
+
+        return new MentoringInfoDto(MentoringLogsDtos, MentoringLogsDtos.size());
+    }
+
 
     /*
      * フロントのメンター詳細ページでメンターに行われたメンタリングリストに使用
