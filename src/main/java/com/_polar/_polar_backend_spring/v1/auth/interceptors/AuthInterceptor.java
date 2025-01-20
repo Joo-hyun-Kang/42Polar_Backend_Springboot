@@ -31,11 +31,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             if (authGuardAnnotation != null) {
                 String token = extractTokenOrNull(request);
                 if (token == null) {
-                    throw new AccessDeniedException("Unauthorized: No JWT token provided");
+                    throw new AccessDeniedException("Unauthorized: No JWT token provided: " + request.getRequestURI());
                 }
 
                 //正しいJWTトークンを持っているか検証
-                Claims claims = null;
+                Claims claims;
                 try {
                     claims = jwtHandler.parseToken(token);
 
