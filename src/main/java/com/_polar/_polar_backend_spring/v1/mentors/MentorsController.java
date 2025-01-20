@@ -7,10 +7,7 @@ import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
 import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.dto.request.PaginationDto;
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
-import com._polar._polar_backend_spring.v1.mentors.response.MentoringInfoDto;
-import com._polar._polar_backend_spring.v1.mentors.response.MentoringLogsDto;
-import com._polar._polar_backend_spring.v1.mentors.response.SimpleLogDto;
-import com._polar._polar_backend_spring.v1.mentors.response.SimpleMentoringInfoDto;
+import com._polar._polar_backend_spring.v1.mentors.response.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +26,7 @@ import java.util.List;
 @Slf4j
 public class MentorsController {
     private final MentoringLogsService mentoringLogsService;
+    private final MentorsService mentorsService;
 
     /*
      * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
@@ -65,5 +64,18 @@ public class MentorsController {
         }
 
         return new SimpleMentoringInfoDto(simpleLogDtoList, simpleLogDtoList.size());
+    }
+
+    /*
+     * フロントのメンター詳細ページでメンター情報を見せる時に使う
+     */
+    @GetMapping("{intraId}")
+    public MentorDto getMentorDetails(@PathVariable String intraId) throws SQLException {
+        MentorDto mentorDetails = this.mentorsService.getMentorDetails(intraId);
+        if (mentorDetails == null) {
+            throw new SQLException("該当するメンターの情報がDBにありません。");
+        }
+
+        return mentorDetails;
     }
 }
