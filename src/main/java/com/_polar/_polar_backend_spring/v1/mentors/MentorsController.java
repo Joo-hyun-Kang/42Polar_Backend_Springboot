@@ -6,15 +6,17 @@ import com._polar._polar_backend_spring.v1.auth.decorators.AuthInfoResolver;
 import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
 import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.dto.request.PaginationDto;
+import com._polar._polar_backend_spring.v1.exception.exceptions.CustomValidationException;
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
+import com._polar._polar_backend_spring.v1.mentors.request.JoinMentorDto;
 import com._polar._polar_backend_spring.v1.mentors.response.*;
+import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.coyote.BadRequestException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.List;
 public class MentorsController {
     private final MentoringLogsService mentoringLogsService;
     private final MentorsService mentorsService;
+    private final AvailableTimesValidator availableTimesValidator;
 
     /*
      * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
@@ -64,6 +67,29 @@ public class MentorsController {
         }
 
         return new SimpleMentoringInfoDto(simpleLogDtoList, simpleLogDtoList.size());
+    }
+
+    /*
+     * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
+     * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
+     */
+    @PatchMapping("/join")
+    @AuthGuard({ROLES.MENTOR})
+    public Boolean join(@RequestBody @Valid JoinMentorDto body, @AuthInfoResolver AuthInfo authInfo, BindingResult bindingResult) throws BadRequestException {
+        if (body.getIsActive()) {
+            if (body.getAvailableTime() == null || body.getAvailableTime().isEmpty()) {
+                throw new BadRequestException("メンタリング可能に設定する際には、利用可能な時間を入力する必要があります");
+            }
+
+            availableTimesValidator.validate(body.getAvailableTime(), bindingResult);
+
+            if (bindingResult.hasErrors()) {
+                throw new CustomValidationException("正しいメンタリング可能時間ではありません。", bindingResult);
+            }
+        }
+
+        // boolean result = mentorService.updateMentorDetails(intraId, body);
+        return false;
     }
 
     /*

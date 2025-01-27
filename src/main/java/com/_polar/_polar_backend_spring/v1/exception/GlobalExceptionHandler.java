@@ -2,6 +2,7 @@ package com._polar._polar_backend_spring.v1.exception;
 
 import com._polar._polar_backend_spring.v1.exception.dto.ErrorResponse;
 import com._polar._polar_backend_spring.v1.exception.dto.SpringValidationResponse;
+import com._polar._polar_backend_spring.v1.exception.exceptions.CustomValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -108,18 +109,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<SpringValidationResponse> handleTypeAndBeanValidationExceptions(MethodArgumentNotValidException ex, Locale locale, HttpServletRequest request) {
-        ArrayList<String> messages = new ArrayList<>();
-        BindingResult bindingResult = ex.getBindingResult();
-
-        for (FieldError error : bindingResult.getFieldErrors()) {
-            String errorMessage = messageSource.getMessage(error, locale);
-            messages.add(error.getField() + " " + errorMessage);
-        }
-
+        ArrayList<String> messages = getMessagesFromMessageSource(ex.getBindingResult(), locale);
         log.error("[Exception] MethodArgumentNotValidException: " + request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body((new SpringValidationResponse(messages,"Bad Request", HttpStatus.BAD_REQUEST.value())));
+    }
+
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<SpringValidationResponse> handleCustomValidationException(CustomValidationException ex, Locale locale, HttpServletRequest request) {
+        ArrayList<String> messages = getMessagesFromMessageSource(ex.getBindingResult(), locale);
+        log.error("[Exception] CustomValidationException: " + request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new SpringValidationResponse(messages, "Bad Request", HttpStatus.BAD_REQUEST.value()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -156,5 +159,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("内部エラーが発生しました", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+    }
+
+    private ArrayList<String> getMessagesFromMessageSource(BindingResult ex, Locale locale) {
+        ArrayList<String> messages = new ArrayList<>();
+        BindingResult bindingResult = ex;
+
+        for (FieldError error : bindingResult.getFieldErrors()) {
+            String errorMessage = messageSource.getMessage(error, locale);
+            messages.add(error.getField() + " " + errorMessage);
+        }
+
+        return messages;
     }
 }
