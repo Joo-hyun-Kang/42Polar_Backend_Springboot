@@ -10,6 +10,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -112,7 +113,7 @@ public class GlobalExceptionHandler {
 
         for (FieldError error : bindingResult.getFieldErrors()) {
             String errorMessage = messageSource.getMessage(error, locale);
-            messages.add(errorMessage);
+            messages.add(error.getField() + " " + errorMessage);
         }
 
         log.error("[Exception] MethodArgumentNotValidException: " + request.getRequestURI());
@@ -120,6 +121,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body((new SpringValidationResponse(messages,"Bad Request", HttpStatus.BAD_REQUEST.value())));
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String errorMessage = "Malformed JSON request";
+
+        log.error("[Exception] HttpMessageNotReadableException: " + ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                errorMessage,
+                request.getRequestURI() + " Bad Request",
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
