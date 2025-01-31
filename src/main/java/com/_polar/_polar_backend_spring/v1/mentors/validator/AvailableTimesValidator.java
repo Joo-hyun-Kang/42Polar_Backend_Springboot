@@ -1,6 +1,6 @@
 package com._polar._polar_backend_spring.v1.mentors.validator;
 
-import com._polar._polar_backend_spring.v1.mentors.request.AvailableTimeDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.AvailableTimeDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
