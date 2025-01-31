@@ -1,4 +1,4 @@
-package com._polar._polar_backend_spring.v1.mentors.response;
+package com._polar._polar_backend_spring.v1.mentors.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
