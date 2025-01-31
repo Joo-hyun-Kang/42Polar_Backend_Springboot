@@ -6,11 +6,15 @@ import com._polar._polar_backend_spring.v1.auth.decorators.AuthInfoResolver;
 import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
 import com._polar._polar_backend_spring.v1.auth.enums.ROLES;
 import com._polar._polar_backend_spring.v1.dto.request.PaginationDto;
+import com._polar._polar_backend_spring.v1.exception.GlobalExceptionHandler;
 import com._polar._polar_backend_spring.v1.exception.exceptions.CustomValidationException;
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
-import com._polar._polar_backend_spring.v1.mentors.request.JoinMentorDto;
-import com._polar._polar_backend_spring.v1.mentors.response.*;
+import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.JoinMentorDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.response.*;
 import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +34,7 @@ public class MentorsController {
     private final MentoringLogsService mentoringLogsService;
     private final MentorsService mentorsService;
     private final AvailableTimesValidator availableTimesValidator;
+    private final ObjectMapper objectMapper;
 
     /*
      * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
@@ -74,7 +79,8 @@ public class MentorsController {
      */
     @PatchMapping("/join")
     @AuthGuard({ROLES.MENTOR})
-    public Boolean join(@RequestBody @Valid JoinMentorDto body, @AuthInfoResolver AuthInfo authInfo, BindingResult bindingResult) throws BadRequestException {
+    public Boolean join(@RequestBody @Valid JoinMentorDto body, @AuthInfoResolver AuthInfo authInfo, BindingResult bindingResult) throws BadRequestException, SQLException, JsonProcessingException {
+        //availableTime検証
         if (body.getIsActive()) {
             if (body.getAvailableTime() == null || body.getAvailableTime().isEmpty()) {
                 throw new BadRequestException("メンタリング可能に設定する際には、利用可能な時間を入力する必要があります");
@@ -87,8 +93,22 @@ public class MentorsController {
             }
         }
 
-        // boolean result = mentorService.updateMentorDetails(intraId, body);
-        return false;
+        //availableTimeの文字列化とアップデート用DTO生成：Jsonレガーをサービスではなくコントローラーで処理
+        String availableTimeToString;
+        try {
+            availableTimeToString = objectMapper.writeValueAsString(body.getAvailableTime());
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+        MentorEnrollDto mentorEnrollDto = new MentorEnrollDto(body.getName(), body.getSlackId(), availableTimeToString, body.getIsActive(), body.getCompany(), body.getDuty());
+
+        boolean isUpdated = mentorsService.updateMentorDetails(authInfo.getIntraId(), mentorEnrollDto);
+        if (!isUpdated) {
+            throw new SQLException(GlobalExceptionHandler.CONFLICTEXCEPTION_UPDATE);
+        }
+
+        return isUpdated;
     }
 
     /*
