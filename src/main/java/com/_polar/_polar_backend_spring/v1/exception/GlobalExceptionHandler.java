@@ -151,19 +151,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception e, BindingResult bindingResult) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         //こちらで処理しなければ、Servletから処理されて404HTMLの返し
         log.error("[Exception] Unexpected Exception: ", e);
-        System.out.println(bindingResult);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("内部エラーが発生しました", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 
-    private ArrayList<String> getMessagesFromMessageSource(BindingResult ex, Locale locale) {
+    private ArrayList<String> getMessagesFromMessageSource(BindingResult bindingResult, Locale locale) {
         ArrayList<String> messages = new ArrayList<>();
-        BindingResult bindingResult = ex;
 
         for (FieldError error : bindingResult.getFieldErrors()) {
             String errorMessage = messageSource.getMessage(error, locale);

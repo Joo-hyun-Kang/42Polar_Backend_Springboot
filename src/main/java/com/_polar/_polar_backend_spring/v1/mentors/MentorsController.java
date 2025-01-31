@@ -71,7 +71,6 @@ public class MentorsController {
 
     /*
      * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
-     * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
      */
     @PatchMapping("/join")
     @AuthGuard({ROLES.MENTOR})
