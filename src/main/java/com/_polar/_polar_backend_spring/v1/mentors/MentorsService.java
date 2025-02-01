@@ -1,5 +1,6 @@
 package com._polar._polar_backend_spring.v1.mentors;
 
+import com._polar._polar_backend_spring.domain.entity.MentorKeywords;
 import com._polar._polar_backend_spring.domain.entity.Mentors;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
@@ -9,12 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class MentorsService {
     private final MentorsRepository mentorsRepository;
+    private final MentorKeywordsService mentorKeywordsService;
 
     public boolean isMentor(String intraId) {
         return mentorsRepository.findByIntraOrNull(intraId) != null;
@@ -119,5 +124,11 @@ public class MentorsService {
         }
 
         return true;
+    }
+
+    public List<String> getMentorKeywordNamesOfMentor(String mentorIntra) {
+        List<MentorKeywords> mentorKeywords = mentorKeywordsService.getMentorKeywords(mentorIntra);
+
+        return mentorKeywords.stream().map(mentorKeyword -> mentorKeyword.getKeywords().getName()).collect(Collectors.toList());
     }
 }

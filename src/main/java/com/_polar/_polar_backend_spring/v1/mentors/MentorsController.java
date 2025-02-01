@@ -102,6 +102,15 @@ public class MentorsController {
     }
 
     /*
+     * メンター詳細ページでメンタが自分のキーワードを見える際に使用
+     */
+    @GetMapping("{intraId}/keywords")
+    @AuthGuard({ROLES.MENTOR})
+    public List<String> getKeywordNames(@PathVariable String intraId) {
+        return mentorsService.getMentorKeywordNamesOfMentor(intraId);
+    }
+
+    /*
      * フロントのメンター詳細ページでメンター情報を見せる時に使う
      */
     @GetMapping("{intraId}")
