@@ -10,7 +10,10 @@ import com._polar._polar_backend_spring.v1.exception.GlobalExceptionHandler;
 import com._polar._polar_backend_spring.v1.exception.exceptions.CustomValidationException;
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.AvailableTimeDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.request.JoinMentorDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.UpdateMentorDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.*;
 import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +46,6 @@ public class MentorsController {
     @AuthGuard({ROLES.MENTOR})
     @GetMapping("/mentorings")
     public MentoringInfoDto getMentoringsLists(@AuthInfoResolver AuthInfo authInfo, @Valid PaginationDto paginationDto) {
-        System.out.println(authInfo);
-
         List<MentoringLogsDto> MentoringLogsDtos = mentoringLogsService.getMentoringsLists(authInfo.getIntraId(), paginationDto);
 
         return new MentoringInfoDto(MentoringLogsDtos, MentoringLogsDtos.size());
@@ -80,35 +82,23 @@ public class MentorsController {
     @PatchMapping("/join")
     @AuthGuard({ROLES.MENTOR})
     public Boolean join(@RequestBody @Valid JoinMentorDto body, @AuthInfoResolver AuthInfo authInfo, BindingResult bindingResult) throws BadRequestException, SQLException, JsonProcessingException {
-        //availableTime検証
+        String availableTimeToString = null;
         if (body.getIsActive()) {
-            if (body.getAvailableTime() == null || body.getAvailableTime().isEmpty()) {
-                throw new BadRequestException("メンタリング可能に設定する際には、利用可能な時間を入力する必要があります");
-            }
+            //availableTime検証
+            validationAvailableTimeThrowEx(body.getAvailableTime(), bindingResult);
 
-            availableTimesValidator.validate(body.getAvailableTime(), bindingResult);
-
-            if (bindingResult.hasErrors()) {
-                throw new CustomValidationException("正しいメンタリング可能時間ではありません。", bindingResult);
-            }
+            //availableTimeの文字列化とアップデート用DTO生成：Jsonレガーをサービスではなくコントローラーで処理
+            availableTimeToString = convertAvailableTimeToStringThrowEx(body.getAvailableTime());
         }
 
-        //availableTimeの文字列化とアップデート用DTO生成：Jsonレガーをサービスではなくコントローラーで処理
-        String availableTimeToString;
-        try {
-            availableTimeToString = objectMapper.writeValueAsString(body.getAvailableTime());
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            throw e;
-        }
         MentorEnrollDto mentorEnrollDto = new MentorEnrollDto(body.getName(), body.getSlackId(), availableTimeToString, body.getIsActive(), body.getCompany(), body.getDuty());
 
-        boolean isUpdated = mentorsService.updateMentorDetails(authInfo.getIntraId(), mentorEnrollDto);
+        boolean isUpdated = mentorsService.enrollMentorInfo(authInfo.getIntraId(), mentorEnrollDto);
         if (!isUpdated) {
             throw new SQLException(GlobalExceptionHandler.CONFLICTEXCEPTION_UPDATE);
         }
 
-        return isUpdated;
+        return true;
     }
 
     /*
@@ -122,5 +112,64 @@ public class MentorsController {
         }
 
         return mentorDetails;
+    }
+
+    /*
+     * フロントのメンター詳細ページでメンター情報をアップデートするAPI
+     * Email、キーワードは別のコントローラーによって登録される→メール認証のため
+     */
+    @PatchMapping("{intraId}")
+    @AuthGuard({ROLES.MENTOR})
+    public Boolean updateMentorDetails(@RequestBody @Valid UpdateMentorDto updateMentorDto,
+                                       @AuthInfoResolver AuthInfo authInfo,
+                                       @PathVariable String intraId, BindingResult bindingResult)
+            throws BadRequestException, SQLException, JsonProcessingException {
+        if (!Objects.equals(authInfo.getIntraId(), intraId)) {
+            throw new BadRequestException(GlobalExceptionHandler.BADREQUESTEXCEPTION);
+        }
+
+        String availableTimeToString = null;
+        if (updateMentorDto.getAvailableTime() != null) {
+            //availableTime検証
+            validationAvailableTimeThrowEx(updateMentorDto.getAvailableTime(), bindingResult);
+
+            //availableTimeの文字列化とアップデート用DTO生成：Jsonレガーをサービスではなくコントローラーで処理
+            availableTimeToString = convertAvailableTimeToStringThrowEx(updateMentorDto.getAvailableTime());
+        }
+
+        MentorUpdateDto mentorUpdateDto = new MentorUpdateDto(
+                updateMentorDto.getName(), updateMentorDto.getSlackId(),
+                availableTimeToString, updateMentorDto.getIsActive(),
+                updateMentorDto.getCompany(), updateMentorDto.getDuty(),
+                updateMentorDto.getIntroduction(), updateMentorDto.getTags(),
+                updateMentorDto.getMarkdownContent());
+
+        boolean isUpdated = mentorsService.updateMentorDetails(authInfo.getIntraId(), mentorUpdateDto);
+        if (!isUpdated) {
+            throw new SQLException(GlobalExceptionHandler.CONFLICTEXCEPTION_UPDATE);
+        }
+
+        return true;
+    }
+
+    private String convertAvailableTimeToStringThrowEx(List<List<AvailableTimeDto>> availableTime) throws JsonProcessingException {
+        try {
+            return objectMapper.writeValueAsString(availableTime);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+    }
+
+    private void validationAvailableTimeThrowEx(List<List<AvailableTimeDto>> availableTime, BindingResult bindingResult) throws BadRequestException {
+        if (availableTime == null || availableTime.isEmpty()) {
+            throw new BadRequestException("メンタリング可能に設定する際には、利用可能な時間を入力する必要があります");
+        }
+
+        availableTimesValidator.validate(availableTime, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            throw new CustomValidationException("正しいメンタリング可能時間ではありません。", bindingResult);
+        }
     }
 }

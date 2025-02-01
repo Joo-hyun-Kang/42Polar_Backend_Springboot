@@ -2,6 +2,7 @@ package com._polar._polar_backend_spring.v1.mentors;
 
 import com._polar._polar_backend_spring.domain.entity.Mentors;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.MentorDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,7 @@ public class MentorsService {
     }
 
     @Transactional
-    public boolean updateMentorDetails(String intraId, MentorEnrollDto mentorEnrollDto) {
+    public boolean enrollMentorInfo(String intraId, MentorEnrollDto mentorEnrollDto) {
         Mentors mentorOrNull = this.mentorsRepository.findByIntraOrNull(intraId);
         if (mentorOrNull == null) {
             return false;
@@ -69,6 +70,53 @@ public class MentorsService {
         mentorOrNull.setActive(mentorEnrollDto.getIsActive());
         mentorOrNull.setCompany(mentorEnrollDto.getCompany());
         mentorOrNull.setDuty(mentorEnrollDto.getDuty());
+
+        return true;
+    }
+
+    @Transactional
+    public boolean updateMentorDetails(String intraId, MentorUpdateDto mentorUpdateDto) {
+        Mentors mentorOrNull = this.mentorsRepository.findByIntraOrNull(intraId);
+        if (mentorOrNull == null) {
+            return false;
+        }
+
+        //クライアントから更新されたデータがあれば、アップデート
+        if (mentorUpdateDto.getIsActive() != null) {
+            mentorOrNull.setActive(mentorUpdateDto.getIsActive());
+        }
+
+        if (mentorUpdateDto.getAvailableTime() != null) {
+            mentorOrNull.setAvailableTime(mentorUpdateDto.getAvailableTime());
+        }
+
+        if (mentorUpdateDto.getName() != null) {
+            mentorOrNull.setName(mentorUpdateDto.getName());
+        }
+
+        if (mentorUpdateDto.getSlackId() != null) {
+            mentorOrNull.setSlackId(mentorUpdateDto.getSlackId());
+        }
+
+        if (mentorUpdateDto.getCompany() != null) {
+            mentorOrNull.setCompany(mentorUpdateDto.getCompany());
+        }
+
+        if (mentorUpdateDto.getDuty() != null) {
+            mentorOrNull.setDuty(mentorUpdateDto.getDuty());
+        }
+
+        if (mentorUpdateDto.getIntroduction() != null) {
+            mentorOrNull.setIntroduction(mentorUpdateDto.getIntroduction());
+        }
+
+        if (mentorUpdateDto.getTags() != null) {
+            mentorOrNull.setTags(mentorUpdateDto.getTags());
+        }
+
+        if (mentorUpdateDto.getMarkdownContent() != null) {
+            mentorOrNull.setMarkdownContent(mentorUpdateDto.getMarkdownContent());
+        }
 
         return true;
     }
