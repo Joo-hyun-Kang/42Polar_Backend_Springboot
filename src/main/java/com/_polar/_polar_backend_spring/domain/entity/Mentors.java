@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,11 +61,11 @@ public class Mentors {
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updateAt;
+    private LocalDateTime updateAt;
 
     @OneToMany(mappedBy = "mentors")
     private List<MentorKeywords> mentorKeywords = new ArrayList<>();

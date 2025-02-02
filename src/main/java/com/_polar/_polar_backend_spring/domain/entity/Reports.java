@@ -1,18 +1,21 @@
 package com._polar._polar_backend_spring.domain.entity;
 
+import com._polar._polar_backend_spring.domain.convertor.ReportStatusConverter;
 import com._polar._polar_backend_spring.domain.entity.enums.ReportStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Entity @Getter
+@Entity
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 public class Reports {
     @Id
@@ -52,27 +55,28 @@ public class Reports {
     @Column(nullable = true)
     private Integer money;
 
-    @Enumerated(EnumType.STRING)
-    private ReportStatus status = ReportStatus.UNABLE;
+    @Convert(converter = ReportStatusConverter.class)
+    private ReportStatus status;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
+    //fetch = FetchType.LAZY貼り付けなければ、自動的にfetch Joinで持ってくる
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentoringLogsId")
     private MentoringLogs mentoringLogs;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mentorId")
+    @JoinColumn(name = "mentorsId")
     private Mentors mentors;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cadetId")
+    @JoinColumn(name = "cadetsId")
     private Cadets cadets;
 }
