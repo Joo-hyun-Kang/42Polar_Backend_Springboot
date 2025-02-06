@@ -1,7 +1,9 @@
 package com._polar._polar_backend_spring.v1.mentors;
 
+import com._polar._polar_backend_spring.domain.entity.Keywords;
 import com._polar._polar_backend_spring.domain.entity.MentorKeywords;
 import com._polar._polar_backend_spring.domain.entity.Mentors;
+import com._polar._polar_backend_spring.v1.keywords.KeywordsService;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.MentorDto;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class MentorsService {
     private final MentorsRepository mentorsRepository;
     private final MentorKeywordsService mentorKeywordsService;
+    private final KeywordsService keywordsService;
 
     public boolean isMentor(String intraId) {
         return mentorsRepository.findByIntraOrNull(intraId) != null;
@@ -130,5 +133,20 @@ public class MentorsService {
         List<MentorKeywords> mentorKeywords = mentorKeywordsService.getMentorKeywords(mentorIntra);
 
         return mentorKeywords.stream().map(mentorKeyword -> mentorKeyword.getKeywords().getName()).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public boolean updateMentorKeywords(String intraId, List<String> selectedKeywordNames) {
+        Mentors mentorOrNull = mentorsRepository.findByIntraOrNull(intraId);
+        if (mentorOrNull == null) {
+            return false;
+        }
+
+        List<Keywords> keywords = null;
+        if (selectedKeywordNames != null) {
+            keywords = keywordsService.getKeywords(selectedKeywordNames);
+        }
+
+        return mentorKeywordsService.updateMentorToKeywords(mentorOrNull, keywords);
     }
 }

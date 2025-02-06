@@ -18,6 +18,7 @@ import com._polar._polar_backend_spring.v1.mentors.dto.response.*;
 import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,6 +109,32 @@ public class MentorsController {
     @AuthGuard({ROLES.MENTOR})
     public List<String> getKeywordNames(@PathVariable String intraId) {
         return mentorsService.getMentorKeywordNamesOfMentor(intraId);
+    }
+
+    /*
+     * メンター詳細ページでメンタが自分のキーワードをアップデートする際に使う
+     */
+    @AuthGuard({ROLES.MENTOR})
+    @PatchMapping("/{intraId}/keywords")
+    public Boolean updateMentorKeywords(
+            @AuthInfoResolver AuthInfo authInfo,
+            @PathVariable String intraId,
+            @RequestBody(required = false) List<String> keywords) throws BadRequestException {
+        if (!authInfo.getIntraId().equals(intraId)) {
+            throw new BadRequestException(GlobalExceptionHandler.BADREQUESTEXCEPTION);
+        }
+
+        //required = false にすると、リクエストボディなければ、引数の keywords は null
+        //required = true（デフォルト）の場合,spring 側で 400 Bad Request を返し
+        if (keywords == null) {
+            throw new BadRequestException("キーワードが指定されていません。");
+        }
+
+        if (!mentorsService.updateMentorKeywords(intraId, keywords)) {
+            throw new EntityNotFoundException(GlobalExceptionHandler.NOTFOUNDEXCEPTION);
+        }
+
+        return true;
     }
 
     /*
