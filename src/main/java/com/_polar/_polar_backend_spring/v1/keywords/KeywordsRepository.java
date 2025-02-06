@@ -1,5 +1,6 @@
 package com._polar._polar_backend_spring.v1.keywords;
 
+import com._polar._polar_backend_spring.domain.entity.Keywords;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListElement;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListInfo;
 import jakarta.persistence.EntityManager;
@@ -91,5 +92,13 @@ public class KeywordsRepository {
         }
 
         return result;
+    }
+
+    public List<Keywords> getKeywords(List<String> keywords) {
+        String jpql = "SELECT k FROM Keywords k WHERE k.name IN :keywords";
+
+        return em.createQuery(jpql, Keywords.class)
+                .setParameter("keywords", keywords)
+                .getResultList();
     }
 }
