@@ -3,6 +3,7 @@ package com._polar._polar_backend_spring.v1.keywords;
 import com._polar._polar_backend_spring.domain.entity.Keywords;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListElement;
 import com._polar._polar_backend_spring.v1.categories.dto.response.MentorsListInfo;
+import com._polar._polar_backend_spring.v1.keywords.dto.db.MentorsListRow;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -20,19 +21,23 @@ public class KeywordsRepository {
 
     public List<MentorsListElement> getMentorsByKeywords(List<String> keywords, String requestMentorNameOrIntraId) {
         StringBuilder jpql = new StringBuilder(
-                "SELECT DISTINCT m.id AS id, " +
-                        "m.name AS name, " +
-                        "m.intraId AS intraId, " +
-                        "m.profileImage AS profileImage, " +
-                        "m.tags AS tags, " +
-                        "m.introduction AS introduction, " +
-                        "m.isActive AS isActive, " +
-                        "k.name AS keyword " +
+                "SELECT DISTINCT new com._polar._polar_backend_spring.v1.keywords.dto.db.MentorsListRow(" +
+                        "str(m.id), " + // m.id を文字列に変換
+                        "m.name, " +
+                        "m.intraId, " +
+                        "m.profileImage, " +
+                        "m.tags, " +
+                        "m.introduction, " +
+                        "m.isActive, " +
+                        "k.name" +
+                        ") " +
                         "FROM Keywords k " +
                         "JOIN k.mentorKeywords mk " +
                         "JOIN mk.mentors m " +
                         "WHERE k.name IN :keywords "
         );
+
+
 
         // オプション条件の追加
         if (requestMentorNameOrIntraId != null && !requestMentorNameOrIntraId.isBlank()) {
@@ -42,8 +47,7 @@ public class KeywordsRepository {
         jpql.append("ORDER BY m.isActive DESC");
 
         // TypedQuery の作成
-        TypedQuery<Object[]> query = em.createQuery(jpql.toString(), Object[].class)
-                .setMaxResults(1000); //最大 1000件;
+        TypedQuery<MentorsListRow> query = em.createQuery(jpql.toString(), MentorsListRow.class);
 
         // パラメータ設定
         query.setParameter("keywords", keywords);
@@ -52,25 +56,26 @@ public class KeywordsRepository {
         }
 
         // 結果取得
-        List<Object[]> results = query.getResultList();
+        List<MentorsListRow> rows = query.getResultList();
 
         // ===MentorsListElementに変換===
         Map<String, MentorsListElement> mentorKeywordsMap = new HashMap<>();
 
         // 結果リストをループしてマッピング
-        for (Object[] row : results) {
+        for (MentorsListRow row : rows) {
+            // MentorsListInfo は既存のコンストラクタを利用
             MentorsListInfo mentor = new MentorsListInfo(
-                    row[0].toString(), // uuid
-                    (String) row[1], // name
-                    (String) row[2], // intraId
-                    (String) row[4], // tags
-                    (String) row[3], // profileImage
-                    (String) row[5], // introduction
-                    (Boolean) row[6] // isActive
+                    row.getId(),
+                    row.getName(),
+                    row.getIntraId(),
+                    row.getTags(),
+                    row.getProfileImage(),
+                    row.getIntroduction(),
+                    row.getIsActive()
             );
 
             // キーワードの取得
-            String keyword = (String) row[7];
+            String keyword = row.getKeyword();
 
             //既に、メンター情報が生成しているか確認する
             String mentorId = mentor.getId();
