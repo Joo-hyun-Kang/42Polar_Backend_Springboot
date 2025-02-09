@@ -16,7 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-class KeywordsServiceTest {
+class KeywordsRepositoryTest {
+    //repositoryテストなのに、サービステストと間違ったの修正
+
     @Autowired
     private KeywordsRepository keywordsRepository;
 
