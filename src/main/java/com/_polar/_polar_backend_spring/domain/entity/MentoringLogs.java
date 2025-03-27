@@ -82,4 +82,22 @@ public class MentoringLogs {
     */
     @OneToOne(mappedBy = "mentoringLogs")
     private Reports reports;
+
+    @Override
+    public String toString() {
+        return "MentoringLogs{" +
+                "id=" + id +
+                ", meetingAt=" + meetingAt +
+                ", meetingStart=" + meetingStart +
+                ", topic='" + topic + '\'' +
+                ", content='" + content + '\'' +
+                ", status=" + status +
+                ", rejectMessage='" + rejectMessage + '\'' +
+                ", requestTime1=" + requestTime1 +
+                ", requestTime2=" + requestTime2 +
+                ", requestTime3=" + requestTime3 +
+                ", createdAt=" + createdAt +
+                ", updateAt=" + updateAt +
+                '}';
+    }
 }

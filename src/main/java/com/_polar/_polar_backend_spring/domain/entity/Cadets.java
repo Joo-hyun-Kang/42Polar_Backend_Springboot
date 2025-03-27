@@ -67,4 +67,19 @@ public class Cadets {
     public boolean isInitialized() {
         return this.name != null;
     }
+
+    @Override
+    public String toString() {
+        return "Cadets{" +
+                "id=" + id +
+                ", intraId='" + intraId + '\'' +
+                ", name='" + name + '\'' +
+                ", profileImage='" + profileImage + '\'' +
+                ", resumeUrl='" + resumeUrl + '\'' +
+                ", isCommon=" + isCommon +
+                ", email='" + email + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }

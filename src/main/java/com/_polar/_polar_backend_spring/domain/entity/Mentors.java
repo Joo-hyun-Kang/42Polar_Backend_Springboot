@@ -108,4 +108,25 @@ public class Mentors {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Mentors{" +
+                "id=" + id +
+                ", intraId='" + intraId + '\'' +
+                ", slackId='" + slackId + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", company='" + company + '\'' +
+                ", duty='" + duty + '\'' +
+                ", profileImage='" + profileImage + '\'' +
+                ", availableTime='" + availableTime + '\'' +
+                ", introduction='" + introduction + '\'' +
+                ", tags=" + tags +
+                ", isActive=" + isActive +
+                ", markdownContent='" + markdownContent + '\'' +
+                ", createAt=" + createAt +
+                ", updateAt=" + updateAt +
+                '}';
+    }
 }

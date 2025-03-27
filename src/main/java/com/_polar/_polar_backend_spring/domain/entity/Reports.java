@@ -79,4 +79,26 @@ public class Reports {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cadetsId")
     private Cadets cadets;
+
+    @Override
+    public String toString() {
+        return "Reports{" +
+                "id=" + id +
+                ", extraCadets='" + extraCadets + '\'' +
+                ", place='" + place + '\'' +
+                ", topic='" + topic + '\'' +
+                ", content='" + content + '\'' +
+                ", imageUrl=" + imageUrl +
+                ", signatureUrl='" + signatureUrl + '\'' +
+                ", feedbackMessage='" + feedbackMessage + '\'' +
+                ", feedback1=" + feedback1 +
+                ", feedback2=" + feedback2 +
+                ", feedback3=" + feedback3 +
+                ", money=" + money +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", mentoringLogs=" + mentoringLogs +
+                '}';
+    }
 }
