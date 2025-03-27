@@ -36,7 +36,7 @@ public class V1WebConfig implements WebMvcConfigurer {
                                 NS_FRONT_URL,
                                 LOCALHOST
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
