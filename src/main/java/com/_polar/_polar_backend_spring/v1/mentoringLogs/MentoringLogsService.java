@@ -34,6 +34,9 @@ public class MentoringLogsService {
         dto.setId(log.getId().toString());
         dto.setCreatedAt(log.getCreatedAt());
         dto.setMeetingAt(log.getMeetingAt());
+        dto.setStatus(log.getStatus().getDescription());
+        dto.setTopic(log.getTopic());
+
 
         MentoringLogsDto.CadetDto cadetDto = new MentoringLogsDto.CadetDto();
         if (log.getCadets() != null) {
