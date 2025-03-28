@@ -21,7 +21,7 @@ public class MentorKeywordsService {
 
     @Transactional
     public boolean updateMentorToKeywords(Mentors mentor, List<Keywords> keywords) {
-        mentorKeywordsRepository.deleteAllForMentor(mentor.getId().toString());
+        mentorKeywordsRepository.deleteAllForMentor(mentor.getId());
 
         if (!keywords.isEmpty()) {
             mentorKeywordsRepository.insertMentorToKeywords(mentor, keywords);

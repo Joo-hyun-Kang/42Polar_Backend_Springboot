@@ -9,6 +9,7 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class MentorKeywordsRepository {
@@ -26,7 +27,7 @@ public class MentorKeywordsRepository {
         return query.getResultList();
     }
 
-    public void deleteAllForMentor(String mentorId) {
+    public void deleteAllForMentor(UUID mentorId) {
         String jpql = "DELETE FROM MentorKeywords mk WHERE mk.mentors.id = :mentorId";
         em.createQuery(jpql)
                 .setParameter("mentorId", mentorId)

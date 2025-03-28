@@ -14,6 +14,7 @@ import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.request.AvailableTimeDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.request.JoinMentorDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.UpdateKeywordDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.request.UpdateMentorDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.*;
 import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
@@ -124,18 +125,25 @@ public class MentorsController {
     public Boolean updateMentorKeywords(
             @AuthInfoResolver AuthInfo authInfo,
             @PathVariable String intraId,
-            @RequestBody(required = false) List<String> keywords) throws BadRequestException {
+            @RequestBody(required = false) UpdateKeywordDto updateKeywordDto) throws BadRequestException {
         if (!authInfo.getIntraId().equals(intraId)) {
             throw new BadRequestException(GlobalExceptionHandler.BADREQUESTEXCEPTION);
         }
 
-        //required = false にすると、リクエストボディなければ、引数の keywords は null
         //required = true（デフォルト）の場合,spring 側で 400 Bad Request を返し
-        if (keywords == null) {
+        //required = false にすると、リクエストボディなければ、引数の keywords は null
+        /*
+            required = falseの時
+                リクエストボディ自体がなし　UpdateKeywordDtoの生成なし
+                リクエストボディが{}    UpdateKeywordDtoの生成、keywords配列ががヌル -> keywordsなしでアップデート
+                リクエストボディが"keywords" : []  　UpdateKeywordDtoの生成、keywords配列がが生成
+                リクエストボディが"keywords" : "awefsa"  　形に合わなくてJSONの変換から400 Bad Request を返し
+        */
+        if (updateKeywordDto == null || updateKeywordDto.getKeywords() == null) {
             throw new BadRequestException("キーワードが指定されていません。");
         }
 
-        if (!mentorsService.updateMentorKeywords(intraId, keywords)) {
+        if (!mentorsService.updateMentorKeywords(intraId, updateKeywordDto.getKeywords())) {
             throw new EntityNotFoundException(GlobalExceptionHandler.NOTFOUNDEXCEPTION);
         }
 
