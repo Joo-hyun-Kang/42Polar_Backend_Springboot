@@ -1,6 +1,7 @@
 package com._polar._polar_backend_spring.v1.mentors;
 
 import com._polar._polar_backend_spring.domain.entity.MentoringLogs;
+import com._polar._polar_backend_spring.domain.entity.enums.LogStatus;
 import com._polar._polar_backend_spring.v1.auth.decorators.AuthGuard;
 import com._polar._polar_backend_spring.v1.auth.decorators.AuthInfoResolver;
 import com._polar._polar_backend_spring.v1.auth.dto.common.AuthInfo;
@@ -75,7 +76,10 @@ public class MentorsController {
             );
         }
 
-        return new SimpleMentoringInfoDto(simpleLogDtoList, simpleLogDtoList.size());
+        int mentoringLogsCount = mentoringLogsService.getMentoringLogsCountByStatus(intraId, LogStatus.DONE).intValue();
+        assert mentoringLogsCount > 0 : "-になければ、オーバーフロ";
+
+        return new SimpleMentoringInfoDto(simpleLogDtoList, mentoringLogsCount);
     }
 
     /*

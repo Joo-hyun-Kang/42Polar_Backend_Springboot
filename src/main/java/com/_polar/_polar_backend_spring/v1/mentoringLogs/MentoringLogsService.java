@@ -1,6 +1,7 @@
 package com._polar._polar_backend_spring.v1.mentoringLogs;
 
 import com._polar._polar_backend_spring.domain.entity.MentoringLogs;
+import com._polar._polar_backend_spring.domain.entity.enums.LogStatus;
 import com._polar._polar_backend_spring.v1.dto.request.PaginationDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.MentoringLogsDto;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,10 @@ public class MentoringLogsService {
 
     public Long getMentoringLogsCount(String mentorIntraId) {
         return mentoringLogsRepository.getMentoringLogsCount(mentorIntraId);
+    }
+
+    public Long getMentoringLogsCountByStatus(String mentorIntraId, LogStatus status) {
+        return mentoringLogsRepository.getMentoringLogsCountByStatus(mentorIntraId, status);
     }
 
     private MentoringLogsDto convertToDto(MentoringLogs log) {

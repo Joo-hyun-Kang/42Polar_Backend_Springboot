@@ -52,4 +52,15 @@ public class MentoringLogsRepository {
                 .setParameter("intraId", mentorIntraId)
                 .getSingleResult();
     }
+
+    public Long getMentoringLogsCountByStatus(String mentorIntraId, LogStatus status) {
+        return em.createQuery("select count(ml) FROM MentoringLogs ml "
+                                + "join ml.mentors m "
+                                + "WHERE ml.mentors.intraId = :intraId "
+                                + "AND ml.status = :status"
+                        , Long.class)
+                .setParameter("intraId", mentorIntraId)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
 }
