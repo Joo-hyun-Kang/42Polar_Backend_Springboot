@@ -43,4 +43,13 @@ public class MentoringLogsRepository {
                 .setFirstResult(take * (page - 1))
                 .getResultList();
     }
+
+    public Long getMentoringLogsCount(String mentorIntraId) {
+        return em.createQuery("select count(ml) FROM MentoringLogs ml "
+                                + "join ml.mentors m "
+                                + "WHERE ml.mentors.intraId = :intraId"
+                        , Long.class)
+                .setParameter("intraId", mentorIntraId)
+                .getSingleResult();
+    }
 }

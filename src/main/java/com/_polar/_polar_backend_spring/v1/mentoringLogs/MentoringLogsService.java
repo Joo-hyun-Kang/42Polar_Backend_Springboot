@@ -29,6 +29,10 @@ public class MentoringLogsService {
                 .collect(Collectors.toList());
     }
 
+    public Long getMentoringLogsCount(String mentorIntraId) {
+        return mentoringLogsRepository.getMentoringLogsCount(mentorIntraId);
+    }
+
     private MentoringLogsDto convertToDto(MentoringLogs log) {
         MentoringLogsDto dto = new MentoringLogsDto();
         dto.setId(log.getId().toString());

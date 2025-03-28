@@ -48,8 +48,9 @@ public class MentorsController {
     @GetMapping("/mentorings")
     public MentoringInfoDto getMentoringsLists(@AuthInfoResolver AuthInfo authInfo, @Valid PaginationDto paginationDto) {
         List<MentoringLogsDto> MentoringLogsDtos = mentoringLogsService.getMentoringsLists(authInfo.getIntraId(), paginationDto);
+        Long mentoringLogsCount = mentoringLogsService.getMentoringLogsCount(authInfo.getIntraId());
 
-        return new MentoringInfoDto(MentoringLogsDtos, MentoringLogsDtos.size());
+        return new MentoringInfoDto(MentoringLogsDtos, mentoringLogsCount);
     }
 
 
