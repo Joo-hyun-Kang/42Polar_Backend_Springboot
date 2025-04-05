@@ -2,9 +2,9 @@ package com._polar._polar_backend_spring.v1.redis;
 
 import com._polar._polar_backend_spring.v1.auth.dto.request.CursesUser42OriginDto;
 import com._polar._polar_backend_spring.v1.auth.dto.request.UserInfo42OriginDto;
+import com._polar._polar_backend_spring.v1.redis.annotataion.LoginRedisTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,12 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class LoginHandler {
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String LOGIN_QUEUE = "loginQueue";
     private final Environment env;
+    private static final String LOGIN_QUEUE = "loginQueue";
+
+    public LoginHandler(@LoginRedisTemplate RedisTemplate<String, String> redisTemplate, Environment env) {
+        this.redisTemplate = redisTemplate;
+        this.env = env;
+    }
 
     public UserInfo42OriginDto handler(String accessToken) {
         // リトライ設定
