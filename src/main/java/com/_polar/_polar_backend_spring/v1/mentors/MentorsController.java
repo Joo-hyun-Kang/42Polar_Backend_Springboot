@@ -12,10 +12,7 @@ import com._polar._polar_backend_spring.v1.exception.exceptions.CustomValidation
 import com._polar._polar_backend_spring.v1.mentoringLogs.MentoringLogsService;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorEnrollDto;
 import com._polar._polar_backend_spring.v1.mentors.dto.common.MentorUpdateDto;
-import com._polar._polar_backend_spring.v1.mentors.dto.request.AvailableTimeDto;
-import com._polar._polar_backend_spring.v1.mentors.dto.request.JoinMentorDto;
-import com._polar._polar_backend_spring.v1.mentors.dto.request.UpdateKeywordDto;
-import com._polar._polar_backend_spring.v1.mentors.dto.request.UpdateMentorDto;
+import com._polar._polar_backend_spring.v1.mentors.dto.request.*;
 import com._polar._polar_backend_spring.v1.mentors.dto.response.*;
 import com._polar._polar_backend_spring.v1.mentors.validator.AvailableTimesValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -81,6 +78,18 @@ public class MentorsController {
         assert mentoringLogsCount > 0 : "-になければ、オーバーフロ";
 
         return new SimpleMentoringInfoDto(simpleLogDtoList, mentoringLogsCount);
+    }
+
+    /*
+     *  会員登録ーMentorページにメール認証のため、コード生成とメールを送るAPI
+     */
+    @AuthGuard({ROLES.MENTOR})
+    @PostMapping("/email")
+    public String invalidateMentorEmail(
+            @AuthInfoResolver AuthInfo authInfo,
+            @RequestBody @Valid RequestEmailDto req) {
+//        return this.mentorsService.sendValidationCode(authInfo.getIntraId(), req.getEmail());;
+        return "hello;";
     }
 
     /*

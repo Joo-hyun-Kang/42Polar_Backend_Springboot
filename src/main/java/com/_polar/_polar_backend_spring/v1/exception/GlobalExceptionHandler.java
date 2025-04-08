@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
     public static final String NOTFOUNDEXCEPTION = "データを見当たらないです";
     public static final String UNAUTHORIZEDEXCEPTION = "アクセスする権限がありません";
     public static final String BADREQUESTEXCEPTION = "APIから求める形に当てはまっていません";
+    public static final String HTTPBODYNOTREADABLE = "HTTPリクエストボディが読み取れません";
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
@@ -128,18 +129,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        String errorMessage = "Malformed JSON request";
-        printLogError("[Exception] HttpMessageNotReadableException: " + request.getRequestURI(), ex, ExceptionLogLevel.STACKTRACE);
+        printLogError("[Exception] HttpMessageNotReadableException: " + request.getRequestURI(), ex, ExceptionLogLevel.COMMENT);
 
         ErrorResponse errorResponse = new ErrorResponse(
-                errorMessage,
+                HTTPBODYNOTREADABLE,
                 request.getRequestURI() + " Bad Request",
                 HttpStatus.BAD_REQUEST.value()
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
